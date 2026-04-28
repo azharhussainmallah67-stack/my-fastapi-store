@@ -5,30 +5,20 @@ from fastapi.templating import Jinja2Templates
 import json, os, uuid
 from datetime import datetime
 
-app = FastAPI(title="MyStore")
+app = FastAPI(title="Retro.me")
 
+# Static files aur Templates setup
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 DB_FILE = "database/store.json"
 
-# ── DATABASE ──────────────────────────────────────────────
 def load_db():
     if not os.path.exists(DB_FILE):
         default = {
-            "products": [
-                {"id":"1","name":"Wireless Headphones","price":2500,"category":"Electronics",
-                 "description":"High quality sound with noise cancellation","stock":50,
-                 "image":"https://placehold.co/400x300/0f172a/38bdf8?text=Headphones"},
-                {"id":"2","name":"Leather Wallet","price":800,"category":"Accessories",
-                 "description":"Genuine leather, slim design with card slots","stock":100,
-                 "image":"https://placehold.co/400x300/0f172a/38bdf8?text=Wallet"},
-                {"id":"3","name":"Running Shoes","price":3500,"category":"Footwear",
-                 "description":"Lightweight and comfortable for daily running","stock":30,
-                 "image":"https://placehold.co/400x300/0f172a/38bdf8?text=Shoes"}
-            ],
+            "products": [],
             "orders": [],
-            "settings": {"store_name":"MyStore","currency":"PKR","admin_password":"admin123"}
+            "settings": {"store_name":"Retro.me","currency":"PKR","admin_password":"admin123"}
         }
         save_db(default)
         return default
@@ -41,6 +31,7 @@ def save_db(data):
         json.dump(data, f, indent=2)
 
 # ── PUBLIC ROUTES ─────────────────────────────────────────
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, category: str = None, search: str = None):
     db = load_db()
@@ -56,12 +47,33 @@ async def home(request: Request, category: str = None, search: str = None):
         "selected_category": category, "search": search
     })
 
+# --- FIXED CART ROUTES (Missing Tags Added Here) ---
+@app.get("/cart", response_class=HTMLResponse)
+@app.get("/cart/", response_class=HTMLResponse)
+async def cart_page(request: Request):
+    db = load_db()
+    # Ye line confirm karti hai ke cart.html templates folder se uthayi jaye
+    return templates.TemplateResponse("cart.html", {
+        "request": request, 
+        "settings": db["settings"]
+    })
+
+@app.get("/track", response_class=HTMLResponse)
+async def track_order_page(request: Request, order_id: str = None, phone: str = None):
+    db = load_db()
+    order_result = None
+    if order_id and phone:
+        order_result = next((o for o in db["orders"] if o["id"] == order_id.upper() and o["customer_phone"] == phone), None)
+    return templates.TemplateResponse("track_order.html", {
+        "request": request, "order": order_result, "settings": db["settings"], "searched": (order_id is not None)
+    })
+
 @app.get("/product/{pid}", response_class=HTMLResponse)
 async def product_detail(request: Request, pid: str):
     db = load_db()
     product = next((p for p in db["products"] if p["id"] == pid), None)
     if not product:
-        raise HTTPException(404, "Product nahi mila")
+        raise HTTPException(404, "Product not found")
     return templates.TemplateResponse("product_detail.html", {
         "request": request, "product": product, "settings": db["settings"]
     })
@@ -94,6 +106,7 @@ async def place_order(request: Request,
     })
 
 # ── ADMIN ROUTES ──────────────────────────────────────────
+
 def is_admin(request: Request):
     return request.cookies.get("admin_ok") == "yes"
 
@@ -206,7 +219,5 @@ async def logout():
 
 if __name__ == "__main__":
     import uvicorn
-    import os
-    # Render khud port batayega, agar nahi to default 8000 use hoga
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    # Yahan app ko string ki bajaye object pass kiya hai taake reload sahi ho
+    uvicorn.run(app, host="0.0.0.0", port=8000)
