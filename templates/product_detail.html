@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - {{ settings.store_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .product-detail { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start; }
+  .product-image-wrap { position:sticky; top:80px; }
+  .product-image-wrap img { width:100%; border-radius:16px; border:1px solid var(--border); }
+  .product-info .category { color:var(--accent2); font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.15em; }
+  .product-info h1 { font-family:'Playfair Display',serif; font-size:2.2rem; margin:0.5rem 0 1rem; line-height:1.2; }
+  .product-info .price { font-size:2rem; font-weight:700; color:var(--accent); margin-bottom:1rem; }
+  .product-info .desc { color:var(--muted); line-height:1.8; margin-bottom:2rem; }
+  .divider { border:none; border-top:1px solid var(--border); margin:1.5rem 0; }
+  .order-form-box { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; }
+  .order-form-box h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:1.5rem; }
+  .total-price { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1rem; margin:1rem 0; text-align:center; }
+  .total-price span { font-size:1.5rem; font-weight:700; color:var(--accent); }
+  @media(max-width:768px) { .product-detail { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a href="/" style="color:var(--muted); text-decoration:none; font-size:0.9rem; display:inline-block; margin-bottom:1.5rem;">← Back to Store</a>
+
+  <div class="product-detail">
+    <div class="product-image-wrap">
+      <img src="{{ product.image }}" alt="{{ product.name }}">
+    </div>
+
+    <div class="product-info">
+      <div class="category">{{ product.category }}</div>
+      <h1>{{ product.name }}</h1>
+      <div class="price">{{ settings.currency }} {{ "{:,.0f}".format(product.price) }}</div>
+      <p class="desc">{{ product.description }}</p>
+
+      {% if product.stock > 0 %}
+      <div style="color:var(--success); margin-bottom:0.5rem;">✓ In Stock — {{ product.stock }} units available</div>
+      {% else %}
+      <div style="color:var(--danger); margin-bottom:0.5rem;">✗ Out of Stock</div>
+      {% endif %}
+
+      <hr class="divider">
+
+      {% if product.stock > 0 %}
+      <div class="order-form-box">
+        <h3>🛒 Place Your Order</h3>
+        <form method="post" action="/order">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" name="customer_name" placeholder="Enter your full name" required>
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" name="customer_phone" placeholder="e.g. 03XX-XXXXXXX" required>
+          </div>
+          <div class="form-group">
+            <label>Delivery Address *</label>
+            <textarea name="customer_address" placeholder="Enter your full delivery address..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Quantity *</label>
+            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" id="qtyInput" required>
+          </div>
+          <div class="total-price">
+            Order Total: <span id="totalAmt">{{ settings.currency }} {{ "{:,.0f}".format(product.price) }}</span>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:0.9rem; font-size:1rem;">
+            ✓ Confirm Order
+          </button>
+          <p style="color:var(--muted); font-size:0.78rem; margin-top:0.8rem; text-align:center;">
+            We will contact you within 24 hours to confirm your order.
+          </p>
+        </form>
+      </div>
+      {% else %}
+      <div style="text-align:center; padding:2rem; color:var(--muted); background:var(--card); border-radius:12px; border:1px solid var(--border);">
+        This product is currently out of stock. Please check back later.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const price = {{ product.price }};
+  const currency = "{{ settings.currency }}";
+  document.getElementById("qtyInput")?.addEventListener("input", function(){
+    const qty = parseInt(this.value) || 1;
+    document.getElementById("totalAmt").textContent = currency + " " + (price * qty).toLocaleString();
+  });
+</script>
+{% endblock %}

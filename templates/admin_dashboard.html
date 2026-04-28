@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — {{ settings.store_name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0a0a0f; --surface:#12121a; --card:#1a1a26; --border:#2a2a3e; --accent:#f59e0b; --accent2:#38bdf8; --text:#e2e8f0; --muted:#64748b; --success:#10b981; --danger:#ef4444; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width:240px; background:var(--surface); border-right:1px solid var(--border); padding:1.5rem; flex-shrink:0; display:flex; flex-direction:column; }
+    .sidebar-brand { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--accent); }
+    .sidebar-sub { font-size:0.72rem; color:var(--muted); margin-bottom:2rem; }
+    .sidebar-nav { flex:1; }
+    .nav-section { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; padding:0.8rem 0.8rem 0.3rem; }
+    .nav-item { display:block; padding:0.55rem 0.8rem; border-radius:7px; color:var(--muted); text-decoration:none; font-size:0.875rem; transition:all 0.2s; cursor:pointer; border:none; background:none; width:100%; text-align:left; font-family:'DM Sans',sans-serif; }
+    .nav-item:hover { background:var(--card); color:var(--text); }
+    .nav-item.active { background:var(--card); color:var(--text); }
+    .nav-item.danger { color:var(--danger); }
+    .nav-item.danger:hover { background:#7f1d1d22; }
+    .badge-count { background:#f59e0b22; color:var(--accent); border-radius:10px; padding:1px 6px; font-size:0.7rem; margin-left:0.4rem; }
+
+    /* MAIN */
+    .main { flex:1; overflow:auto; display:flex; flex-direction:column; }
+    .topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+    .topbar h2 { font-family:'Playfair Display',serif; font-size:1.3rem; }
+    .topbar-right { display:flex; align-items:center; gap:1rem; }
+    .topbar-right span { color:var(--muted); font-size:0.85rem; }
+    .content { padding:2rem; flex:1; }
+
+    /* STATS */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; position:relative; overflow:hidden; }
+    .stat-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, transparent 60%, #ffffff04); }
+    .stat-label { font-size:0.78rem; color:var(--muted); font-weight:500; }
+    .stat-value { font-size:1.9rem; font-weight:700; margin:0.3rem 0 0; line-height:1; }
+    .stat-icon { position:absolute; right:1.2rem; top:1.2rem; font-size:1.8rem; opacity:0.6; }
+
+    /* SECTION CARDS */
+    .section-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:2rem; overflow:hidden; }
+    .section-head { padding:1.1rem 1.4rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .section-head h3 { font-family:'Playfair Display',serif; font-size:1.1rem; }
+    table { width:100%; border-collapse:collapse; }
+    th { padding:0.75rem 1.2rem; text-align:left; font-size:0.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px solid var(--border); }
+    td { padding:0.75rem 1.2rem; font-size:0.875rem; border-bottom:1px solid #ffffff08; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#ffffff04; }
+
+    /* BUTTONS */
+    .btn { display:inline-block; padding:0.4rem 0.9rem; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer; text-decoration:none; border:none; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .btn-primary { background:var(--accent); color:#000; }
+    .btn-primary:hover { background:#d97706; }
+    .btn-edit { background:#1e3a5f; color:var(--accent2); border:1px solid #38bdf833; }
+    .btn-delete { background:#7f1d1d22; color:var(--danger); border:1px solid #ef444433; }
+    .btn-sm { padding:0.28rem 0.65rem; font-size:0.75rem; }
+
+    .badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.72rem; font-weight:600; }
+    .badge-pending { background:#92400e22; color:#f59e0b; border:1px solid #f59e0b44; }
+    .badge-confirmed { background:#1e3a5f22; color:var(--accent2); border:1px solid #38bdf844; }
+    .badge-delivered { background:#065f4622; color:var(--success); border:1px solid #10b98144; }
+    .badge-cancelled { background:#7f1d1d22; color:var(--danger); border:1px solid #ef444444; }
+
+    /* TABS */
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    /* SETTINGS */
+    .settings-form { padding:1.5rem; max-width:480px; }
+    .form-group { margin-bottom:1.1rem; }
+    .form-group label { display:block; font-size:0.82rem; color:var(--muted); margin-bottom:0.35rem; }
+    .form-group input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.65rem 1rem; border-radius:8px; font-size:0.875rem; outline:none; transition:border-color 0.2s; font-family:'DM Sans',sans-serif; }
+    .form-group input:focus { border-color:var(--accent); }
+
+    .thumb { width:46px; height:34px; border-radius:4px; object-fit:cover; }
+    .empty-td { text-align:center; color:var(--muted); padding:2.5rem !important; }
+    .stock-ok { color:var(--success); }
+    .stock-warn { color:#f59e0b; }
+    .stock-bad { color:var(--danger); }
+
+    select.status-select { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.28rem 0.5rem; border-radius:6px; font-size:0.75rem; font-family:'DM Sans',sans-serif; outline:none; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div>
+    <div class="sidebar-brand">{{ settings.store_name }}</div>
+    <div class="sidebar-sub">Admin Dashboard</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Manage</div>
+    <button class="nav-item active" onclick="showTab('products')" id="link-products">📦 Products</button>
+    <button class="nav-item" onclick="showTab('orders')" id="link-orders">
+      🛒 Orders
+      {% if pending_orders > 0 %}<span class="badge-count">{{ pending_orders }}</span>{% endif %}
+    </button>
+    <button class="nav-item" onclick="showTab('settings')" id="link-settings">⚙️ Settings</button>
+    <div class="nav-section">Store</div>
+    <a href="/" target="_blank" class="nav-item">🌐 View Store</a>
+    <a href="/admin/logout" class="nav-item danger">🚪 Logout</a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h2 id="page-title">Products</h2>
+    <div class="topbar-right">
+      <span>Welcome back, Admin 👋</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value" style="color:var(--accent2);">{{ total_products }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" style="color:var(--accent);">{{ total_orders }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value" style="color:#f59e0b;">{{ pending_orders }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" style="color:var(--success);">{{ settings.currency }} {{ "{:,.0f}".format(total_revenue) }}</div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS TAB -->
+    <div class="tab-content active" id="tab-products">
+      <div class="section-card">
+        <div class="section-head">
+          <h3>📦 All Products</h3>
+          <a href="/admin/products/add" class="btn btn-primary">+ Add Product</a>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% if products %}
+            {% for p in products %}
+            <tr>
+              <td><img src="{{ p.image }}" class="thumb" alt="{{ p.name }}"></td>
+              <td><strong>{{ p.name }}</strong></td>
+              <td style="color:var(--accent2);">{{ p.category }}</td>
+              <td style="color:var(--accent); font-weight:600;">{{ settings.currency }} {{ "{:,.0f}".format(p.price) }}</td>
+              <td class="{% if p.stock < 5 %}stock-bad{% elif p.stock < 20 %}stock-warn{% else %}stock-ok{% endif %}">{{ p.stock }} units</td>
+              <td style="display:flex; gap:0.4rem; align-items:center;">
+                <a href="/admin/products/edit/{{ p.id }}" class="btn btn-edit btn-sm">✏ Edit</a>
+                <form method="post" action="/admin/products/delete/{{ p.id }}" style="display:inline;" onsubmit="return confirm('Delete this product?')">
+                  <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="6" class="empty-td">No products yet — Click "Add Product" to get started.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="tab-content" id="tab-orders">
+      <div class="section-card">
+        <div class="section-head">
+          <h3>🛒 All Orders</h3>
+          <span style="color:var(--muted); font-size:0.85rem;">{{ total_orders }} total order(s)</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Order ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th><th>Update</th></tr>
+          </thead>
+          <tbody>
+            {% if orders %}
+            {% for o in orders|reverse %}
+            <tr>
+              <td>
+                <strong style="color:var(--accent);">#{{ o.id }}</strong><br>
+                <small style="color:var(--muted);">{{ o.created_at[:10] }}</small>
+              </td>
+              <td>
+                {{ o.customer_name }}<br>
+                <small style="color:var(--muted);">{{ o.customer_phone }}</small>
+              </td>
+              <td>
+                {{ o.product_name }}<br>
+                <small style="color:var(--muted);">Qty: {{ o.quantity }}</small>
+              </td>
+              <td style="color:var(--accent); font-weight:600;">{{ settings.currency }} {{ "{:,.0f}".format(o.total_price) }}</td>
+              <td><span class="badge badge-{{ o.status }}">{{ o.status|capitalize }}</span></td>
+              <td>
+                <form method="post" action="/admin/orders/update/{{ o.id }}" style="display:flex; gap:0.4rem; align-items:center;">
+                  <select name="status" class="status-select">
+                    <option value="pending"   {% if o.status=='pending'   %}selected{% endif %}>Pending</option>
+                    <option value="confirmed" {% if o.status=='confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="delivered" {% if o.status=='delivered' %}selected{% endif %}>Delivered</option>
+                    <option value="cancelled" {% if o.status=='cancelled' %}selected{% endif %}>Cancelled</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="6" class="empty-td">No orders yet.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-content" id="tab-settings">
+      <div class="section-card">
+        <div class="section-head">
+          <h3>⚙️ Store Settings</h3>
+        </div>
+        <div class="settings-form">
+          <form method="post" action="/admin/settings/update">
+            <div class="form-group">
+              <label>Store Name</label>
+              <input type="text" name="store_name" value="{{ settings.store_name }}" required>
+            </div>
+            <div class="form-group">
+              <label>Currency Code (e.g. PKR, USD, EUR)</label>
+              <input type="text" name="currency" value="{{ settings.currency }}" required>
+            </div>
+            <div class="form-group">
+              <label>Admin Password</label>
+              <input type="password" name="admin_password" value="{{ settings.admin_password }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="padding:0.65rem 1.6rem;">💾 Save Settings</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const titles = { products: 'Products', orders: 'Orders', settings: 'Settings' };
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('link-' + name).classList.add('active');
+  document.getElementById('page-title').textContent = titles[name];
+}
+</script>
+</body>
+</html>
