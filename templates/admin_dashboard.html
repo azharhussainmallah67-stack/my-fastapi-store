@@ -85,7 +85,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div>
     <div class="sidebar-brand">{{ settings.store_name }}</div>
@@ -105,7 +104,6 @@
   </nav>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <h2 id="page-title">Products</h2>
@@ -115,7 +113,6 @@
   </div>
 
   <div class="content">
-    <!-- STATS -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">📦</div>
@@ -139,7 +136,6 @@
       </div>
     </div>
 
-    <!-- PRODUCTS TAB -->
     <div class="tab-content active" id="tab-products">
       <div class="section-card">
         <div class="section-head">
@@ -175,7 +171,6 @@
       </div>
     </div>
 
-    <!-- ORDERS TAB -->
     <div class="tab-content" id="tab-orders">
       <div class="section-card">
         <div class="section-head">
@@ -184,7 +179,7 @@
         </div>
         <table>
           <thead>
-            <tr><th>Order ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th><th>Update</th></tr>
+            <tr><th>Order ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Address</th><th>Status</th><th>Update</th></tr>
           </thead>
           <tbody>
             {% if orders %}
@@ -203,6 +198,9 @@
                 <small style="color:var(--muted);">Qty: {{ o.quantity }}</small>
               </td>
               <td style="color:var(--accent); font-weight:600;">{{ settings.currency }} {{ "{:,.0f}".format(o.total_price) }}</td>
+              <td style="max-width:180px; font-size:0.8rem; color:var(--muted); line-height:1.2;">
+                {{ o.customer_address }}
+              </td>
               <td><span class="badge badge-{{ o.status }}">{{ o.status|capitalize }}</span></td>
               <td>
                 <form method="post" action="/admin/orders/update/{{ o.id }}" style="display:flex; gap:0.4rem; align-items:center;">
@@ -218,14 +216,13 @@
             </tr>
             {% endfor %}
             {% else %}
-            <tr><td colspan="6" class="empty-td">No orders yet.</td></tr>
+            <tr><td colspan="7" class="empty-td">No orders yet.</td></tr>
             {% endif %}
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- SETTINGS TAB -->
     <div class="tab-content" id="tab-settings">
       <div class="section-card">
         <div class="section-head">
