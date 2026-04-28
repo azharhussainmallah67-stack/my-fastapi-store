@@ -56,6 +56,14 @@
   <h1>Welcome to <span>{{ settings.store_name }}</span></h1>
   <p>Discover our collection of premium products at the best prices</p>
   <div class="hero-badges">
+    <a href="/track" style="text-decoration:none;"><span class="hero-badge" style="border-color:var(--accent); color:var(--accent);">🔍 Track My Order</span></a>
+    
+    <a href="/cart" style="text-decoration:none;">
+      <span class="hero-badge" style="border-color:var(--accent2); color:var(--accent2);">
+        🛒 View Cart (<span id="cart-count">0</span>)
+      </span>
+    </a>
+
     <span class="hero-badge">✓ Secure Orders</span>
     <span class="hero-badge">🚚 Fast Delivery</span>
     <span class="hero-badge">💬 24/7 Support</span>
@@ -103,7 +111,10 @@
             <div class="stock-low">✗ Out of Stock</div>
             {% endif %}
           </div>
-          <a href="/product/{{ product.id }}" class="btn btn-primary btn-sm">Buy Now →</a>
+          <div style="display:flex; gap:0.5rem;">
+              <a href="/product/{{ product.id }}" class="btn btn-primary btn-sm">Buy Now →</a>
+              <button onclick="addToCart('{{ product.id }}', '{{ product.name }}', '{{ product.price }}', '{{ product.image }}')" class="btn btn-edit btn-sm">🛒 Cart</button>
+          </div>
         </div>
       </div>
     </div>
@@ -128,4 +139,24 @@
     <div class="contact-card"><div class="icon">🕐</div><div class="label">Hours</div><div class="value">Mon–Sat, 9am–8pm</div></div>
   </div>
 </div>
+
+<script>
+// Logic to update the count on page load
+function updateCartUI() {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    document.getElementById('cart-count').innerText = cart.length;
+}
+
+// Logic to add to cart and update UI
+function addToCart(id, name, price, image) {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    cart.push({id: id, name: name, price: price, image: image});
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartUI();
+    alert(name + " added to cart!");
+}
+
+// Initial UI Update
+updateCartUI();
+</script>
 {% endblock %}
