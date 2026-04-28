@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width:500px; margin:80px auto; padding:30px; background:var(--card); border:1px solid var(--border); border-radius:12px; text-align:center;">
+    <h2 style="font-family:'Playfair Display'; margin-bottom:20px;">Track Order</h2>
+    <form action="/track" method="get">
+        <input type="text" name="order_id" placeholder="Order ID (e.g. #ABC1234)" required style="width:100%; padding:12px; margin-bottom:15px; background:var(--bg); border:1px solid var(--border); color:white; border-radius:8px;">
+        <input type="text" name="phone" placeholder="Registered Phone Number" required style="width:100%; padding:12px; margin-bottom:15px; background:var(--bg); border:1px solid var(--border); color:white; border-radius:8px;">
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:12px;">Track Now</button>
+    </form>
+
+    {% if searched %}
+        <div style="margin-top:30px; padding:20px; border-top:1px solid var(--border);">
+            {% if order %}
+                <h3 style="color:var(--accent);">Status: {{ order.status|upper }}</h3>
+                <p style="margin-top:10px;">Item: {{ order.product_name }}</p>
+                <p style="color:var(--muted); font-size:0.9rem;">Ordered on: {{ order.created_at }}</p>
+            {% else %}
+                <p style="color:var(--danger);">❌ Order details not matched.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+    <a href="/" style="display:block; margin-top:20px; color:var(--muted); text-decoration:none;">← Back to Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="margin-top: 5rem; min-height: 80vh; color: white;">
+    <h1 style="font-family:'Playfair Display',serif;">Shopping Cart</h1>
+    <div id="cart-list" style="margin-top: 2rem;"></div>
+    <div id="cart-total" style="margin-top: 2rem; font-size: 1.5rem; text-align: right;"></div>
+</div>
+
+<script>
+    function loadCart() {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let list = document.getElementById('cart-list');
+        let totalDiv = document.getElementById('cart-total');
+        
+        if(cart.length === 0) {
+            list.innerHTML = "<h3>Aapka cart khali hai.</h3><a href='/'>Shopping start karein</a>";
+            return;
+        }
+
+        let total = 0;
+        let html = cart.map((item, index) => {
+            total += parseFloat(item.price);
+            return `
+                <div style="background:#1e1b4b; padding:1.5rem; margin-bottom:1rem; border:1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius:12px;">
+                    <div style="display:flex; align-items:center; gap:1.5rem;">
+                        <img src="${item.image}" style="width:70px; height:70px; object-fit:cover; border-radius:8px;">
+                        <div>
+                            <h3 style="margin:0;">${item.name}</h3>
+                            <p style="margin:5px 0 0; color:#f59e0b;">{{ settings.currency }} ${item.price}</p>
+                        </div>
+                    </div>
+                    <button onclick="removeItem(${index})" style="background:none; border:none; color:#ef4444; cursor:pointer;">Remove</button>
+                </div>`;
+        }).join('');
+        
+        list.innerHTML = html;
+        totalDiv.innerHTML = `Grand Total: {{ settings.currency }} ${total}`;
+    }
+
+    function removeItem(index) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadCart();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCart);
+</script>
+{% endblock %}
