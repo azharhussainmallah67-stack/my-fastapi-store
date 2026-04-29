@@ -1,1 +1,47 @@
-
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Wireless Headphones",
+      "price": 2500.0,
+      "category": "Electronics",
+      "description": "High quality sound with noise cancellation",
+      "stock": 50,
+      "image": "https://placehold.co/400x300/0f172a/38bdf8?text=Headphones",
+      "original_price": 2500.0,
+      "images": [],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "2",
+      "name": "Leather Wallet",
+      "price": 800,
+      "category": "Accessories",
+      "description": "Genuine leather, slim design with card slots",
+      "stock": 100,
+      "image": "https://placehold.co/400x300/0f172a/38bdf8?text=Wallet"
+    },
+    {
+      "id": "3",
+      "name": "Running Shoes",
+      "price": 3500,
+      "category": "Footwear",
+      "description": "Lightweight and comfortable for daily running",
+      "stock": 30,
+      "image": "https://placehold.co/400x300/0f172a/38bdf8?text=Shoes"
+    }
+  ],
+  "orders": [],
+  "settings": {
+    "store_name": "MyStore",
+    "currency": "PKR",
+    "admin_password": "admin123",
+    "store_tagline": "",
+    "whatsapp": "03123296340",
+    "email": "azharhussainmallah67@gmail.com",
+    "address": "",
+    "announcement": "",
+    "free_shipping_above": 3000
+  }
+}
